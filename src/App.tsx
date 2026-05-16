@@ -124,7 +124,7 @@ export default function App() {
         setCount(1)
         setTargetStatus('present')
         addAlert('success', `✅ "${targetLabel}" detectado por primera vez`)
-        speak(`${targetLabel} detectado. Conteo: 1`)
+        speak(`1`)
       } else {
         setTargetStatus('absent')
         addAlert('warning', `⚠️ "${targetLabel}" no visible al iniciar`)
@@ -134,7 +134,7 @@ export default function App() {
       setCount(c => {
         const next = c + 1
         addAlert('success', `✅ "${targetLabel}" reapareció — conteo: ${next}`)
-        speak(`${targetLabel}. Conteo: ${next}`)
+        speak(`${next}`)
         return next
       })
       setTargetStatus('present')
