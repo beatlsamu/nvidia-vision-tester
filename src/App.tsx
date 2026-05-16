@@ -124,7 +124,7 @@ export default function App() {
         setCount(1)
         setTargetStatus('present')
         addAlert('success', `✅ "${targetLabel}" detectado por primera vez`)
-        speak(`1`)
+        speak(`${targetLabel}. 1`)
       } else {
         setTargetStatus('absent')
         addAlert('warning', `⚠️ "${targetLabel}" no visible al iniciar`)
