@@ -95,11 +95,21 @@ export default function App() {
   const [cameraActive, setCameraActive] = useState(false)
   const [framesSent, setFramesSent] = useState(0)
   const [latency, setLatency] = useState(0)
-  const intervalMs = mode === 'tracking' ? 1000 : 2000
+  const [intervalMs, setIntervalMs] = useState(500)
 
   function addAlert(type, msg) {
     const time = new Date().toLocaleTimeString()
     setAlerts(prev => [{ type, msg, time }, ...prev].slice(0, 20))
+  }
+
+  function speak(text: string) {
+    if (!window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+    const utter = new SpeechSynthesisUtterance(text)
+    utter.lang = 'es-ES'
+    utter.rate = 1.1
+    utter.pitch = 1.0
+    window.speechSynthesis.speak(utter)
   }
 
   function processTrackingResult(result) {
@@ -114,20 +124,22 @@ export default function App() {
         setCount(1)
         setTargetStatus('present')
         addAlert('success', `✅ "${targetLabel}" detectado por primera vez`)
+        speak(`${targetLabel} detectado. Conteo: 1`)
       } else {
         setTargetStatus('absent')
         addAlert('warning', `⚠️ "${targetLabel}" no visible al iniciar`)
       }
     } else if (!prev && isPresent) {
-      // objeto reapareció → contar
+      // objeto reapareció → contar (solo habla aquí)
       setCount(c => {
         const next = c + 1
         addAlert('success', `✅ "${targetLabel}" reapareció — conteo: ${next}`)
+        speak(`${targetLabel}. Conteo: ${next}`)
         return next
       })
       setTargetStatus('present')
     } else if (prev && !isPresent) {
-      // objeto salió
+      // objeto salió → silencio
       setTargetStatus('absent')
       addAlert('danger', `❌ "${targetLabel}" salió de la escena`)
     }
@@ -298,12 +310,30 @@ export default function App() {
                 </div>
                 <canvas ref={canvasRef} className="hidden" />
                 {cameraActive && (
-                  <div className="flex gap-3 text-xs text-zinc-400 mb-4">
+                  <div className="flex gap-3 text-xs text-zinc-400 mb-2">
                     <span>Frames: <strong className="text-white">{framesSent}</strong></span>
                     <span>Lat: <strong className="text-white">{latency}ms</strong></span>
-                    <span>Int: <strong className="text-white">{intervalMs/1000}s</strong></span>
+                    <span>Int: <strong className="text-white">{intervalMs}ms</strong></span>
                   </div>
                 )}
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs text-zinc-500 mb-1">
+                    <span>⚡ Sensibilidad</span>
+                    <span className={`font-medium ${intervalMs <= 400 ? 'text-green-400' : intervalMs <= 800 ? 'text-yellow-400' : 'text-zinc-400'}`}>
+                      {intervalMs <= 400 ? 'Máxima' : intervalMs <= 800 ? 'Alta' : intervalMs <= 1500 ? 'Media' : 'Baja'} — {intervalMs}ms
+                    </span>
+                  </div>
+                  <input
+                    type="range" min="300" max="3000" step="100"
+                    value={intervalMs}
+                    onChange={e => setIntervalMs(Number(e.target.value))}
+                    className="w-full accent-green-400"
+                  />
+                  <div className="flex justify-between text-xs text-zinc-700 mt-0.5">
+                    <span>300ms</span>
+                    <span>3s</span>
+                  </div>
+                </div>
                 <button onClick={cameraActive ? stopCamera : startCamera}
                   className={`w-full py-3 rounded-2xl font-bold mb-4 text-sm ${cameraActive ? 'bg-red-600' : 'bg-white text-black'}`}>
                   {cameraActive ? '⏹ Detener cámara' : '▶ Iniciar cámara'}
