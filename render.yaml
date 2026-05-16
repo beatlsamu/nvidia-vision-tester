@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: nvidia-vision-tester
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NVIDIA_API_KEY
+        sync: false          # Set this manually in Render dashboard
+      - key: VITE_NVIDIA_API_KEY
+        sync: false          # Same value — needed at build time for the bundle
+      - key: VITE_MODEL
+        value: meta/llama-4-maverick-17b-128e-instruct
+      - key: VITE_API_URL
+        value: /nvidia/v1/chat/completions
